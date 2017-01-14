@@ -1133,12 +1133,13 @@ get_visual (void)
 	return scr->root_visual;
 }
 
-// Parse an X-styled geometry string, we don't support signed offsets though.
+// Parse an X-styled geometry string.
 bool
 parse_geometry_string (char *str, int *tmp)
 {
     char *p = str;
     int i = 0, j;
+    int id = 1;
 
     if (!str || !str[0])
         return false;
@@ -1160,7 +1161,16 @@ parse_geometry_string (char *str, int *tmp)
             i++; p++; continue;
         }
         if (*p == '+') {
+            id = 1;
             if (i < 1) // Stray '+', skip the first two fields
+                i = 2;
+            else
+                i++;
+            p++; continue;
+        }
+        if (*p == '-') { // Negative padding
+            id = -1;
+            if (i < 1) // Stray '-', skip first two fields
                 i = 2;
             else
                 i++;
@@ -1178,7 +1188,7 @@ parse_geometry_string (char *str, int *tmp)
             fprintf(stderr, "Invalid geometry specified\n");
             return false;
         }
-        tmp[i] = j;
+        tmp[i] = id * j;
     }
 
     return true;
